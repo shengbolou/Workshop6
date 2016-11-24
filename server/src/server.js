@@ -12,6 +12,7 @@ app.use(bodyParser.text());
 app.use(express.static('../client/build'));
 
 var StatusUpdateSchema = require('./schemas/statusupdate.json');
+var commentSchema = require('./schemas/comment.json');
 var validate = require('express-jsonschema').validate;
 var database = require('./database.js');
 var readDocument = database.readDocument;
@@ -96,6 +97,34 @@ function getUserIdFromToken(authorizationLine) {
     return -1;
   }
 }
+
+function postComment(feedItemId, author, contents) {
+  var feedItem = readDocument('feedItems', feedItemId);
+  feedItem.comments.push({
+    "author": author,
+    "contents": contents,
+    "postDate": new Date().getTime(),
+    "likeCounter": []
+  });
+  writeDocument('feedItems', feedItem);
+  // Return a resolved version of the feed item.
+  return getFeedItemSync(feedItemId);
+}
+
+app.post('/feeditem/:feeditemid/commentThread/comment',validate({ body: commentSchema}),function(req,res){
+  var body = req.body;
+  var fromUser = getUserIdFromToken(req.get('Authorization'));
+  var feedItemId = req.params.feeditemid;
+  if (fromUser === body.author) {
+    var newPost = postComment(feedItemId, body.author, body.contents);
+    res.status(201);
+    res.set('Location', '/feeditem/' + newPost._id);
+    res.send(newPost);
+  }
+  else{
+    res.send(401).end();
+  }
+});
 
 /**
 * Adds a new status update to the database.
