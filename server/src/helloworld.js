@@ -1,4 +1,3 @@
-var util = require('./util.js');
-var reverseString = util.reverseString;
+var reverseString = require('./util.js').reverseString;
 
 console.log(reverseString("Hello World!"));
