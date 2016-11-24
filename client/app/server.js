@@ -1,5 +1,3 @@
-import {readDocument, writeDocument} from './database.js';
-
 var token = 'eyJpZCI6NH0=';
 
 /**
@@ -63,18 +61,6 @@ function sendXHR(verb, resource, body, cb) {
     default:
       throw new Error('Unknown body type: ' + typeof(body));
   }
-}
-
-
-
-/**
- * Emulates how a REST call is *asynchronous* -- it calls your function back
- * some time in the future with data.
- */
-function emulateServerReturn(data, cb) {
-  setTimeout(() => {
-    cb(data);
-  }, 4);
 }
 
 /**
@@ -142,27 +128,20 @@ export function unlikeFeedItem(feedItemId, userId, cb) {
  * Adds a 'like' to a comment.
  */
 export function likeComment(feedItemId, commentIdx, userId, cb) {
-  var feedItem = readDocument('feedItems', feedItemId);
-  var comment = feedItem.comments[commentIdx];
-  comment.likeCounter.push(userId);
-  writeDocument('feedItems', feedItem);
-  comment.author = readDocument('users', comment.author);
-  emulateServerReturn(comment, cb);
+  sendXHR('PUT','/feeditem/'+feedItemId+'/commentThread/comment/'+commentIdx+'/likelist/'+userId,undefined,
+  (xhr)=>{
+    cb(JSON.parse(xhr.responseText));
+  });
 }
 
 /**
  * Removes a 'like' from a comment.
  */
 export function unlikeComment(feedItemId, commentIdx, userId, cb) {
-  var feedItem = readDocument('feedItems', feedItemId);
-  var comment = feedItem.comments[commentIdx];
-  var userIndex = comment.likeCounter.indexOf(userId);
-  if (userIndex !== -1) {
-    comment.likeCounter.splice(userIndex, 1);
-    writeDocument('feedItems', feedItem);
-  }
-  comment.author = readDocument('users', comment.author);
-  emulateServerReturn(comment, cb);
+  sendXHR('DELETE','/feeditem/'+feedItemId+'/commentThread/comment/'+commentIdx+'/likelist/'+userId,undefined,
+  (xhr)=>{
+    cb(JSON.parse(xhr.responseText));
+  });
 }
 
 /**

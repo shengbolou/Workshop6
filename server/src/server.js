@@ -126,6 +126,49 @@ app.post('/feeditem/:feeditemid/commentThread/comment',validate({ body: commentS
   }
 });
 
+app.put('/feeditem/:feeditemid/commentThread/comment/:commentIdx/likelist/:userId',function(req,res){
+  var fromUser = getUserIdFromToken(req.get('Authorization'));
+  var feedItemId = parseInt(req.params.feeditemid,10);
+  var commentIdx = parseInt(req.params.commentIdx,10);
+  var userId = parseInt(req.params.userId,10);
+  if(fromUser === userId){
+    var feedItem = readDocument('feedItems', feedItemId);
+    var comment = feedItem.comments[commentIdx];
+    if(comment.likeCounter.indexOf(userId)===-1){
+      comment.likeCounter.push(userId);
+    }
+    writeDocument('feedItems', feedItem);
+    comment.author = readDocument('users', comment.author);
+    res.status(201);
+    res.send(comment);
+  }else{
+    res.send(401).end();
+  }
+
+});
+
+app.delete('/feeditem/:feeditemid/commentThread/comment/:commentIdx/likelist/:userId',function(req,res){
+  var fromUser = getUserIdFromToken(req.get('Authorization'));
+  var feedItemId = parseInt(req.params.feeditemid,10);
+  var commentIdx = parseInt(req.params.commentIdx,10);
+  var userId = parseInt(req.params.userId,10);
+  if(fromUser === userId){
+    var feedItem = readDocument('feedItems', feedItemId);
+    var comment = feedItem.comments[commentIdx];
+    var index = comment.likeCounter.indexOf(userId);
+    if(index!==-1){
+      comment.likeCounter.splice(index,1);
+    }
+    writeDocument('feedItems', feedItem);
+    comment.author = readDocument('users', comment.author);
+    res.status(201);
+    res.send(comment);
+  }else{
+    res.send(401).end();
+  }
+
+});
+
 /**
 * Adds a new status update to the database.
 */
