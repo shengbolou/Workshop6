@@ -122,7 +122,7 @@ app.post('/feeditem/:feeditemid/commentThread/comment',validate({ body: commentS
     res.send(newPost);
   }
   else{
-    res.send(401).end();
+    res.status(401).end();
   }
 });
 
@@ -142,7 +142,7 @@ app.put('/feeditem/:feeditemid/commentThread/comment/:commentIdx/likelist/:userI
     res.status(201);
     res.send(comment);
   }else{
-    res.send(401).end();
+    res.status(401).end();
   }
 
 });
@@ -164,7 +164,7 @@ app.delete('/feeditem/:feeditemid/commentThread/comment/:commentIdx/likelist/:us
     res.status(201);
     res.send(comment);
   }else{
-    res.send(401).end();
+    res.status(401).end();
   }
 
 });
